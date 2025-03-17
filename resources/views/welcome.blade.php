@@ -24,7 +24,7 @@
         <div class="relative max-w-screen-xl px-4 py-20 mx-auto lg:flex lg:h-screen lg:items-start lg:px-8">
             <div class="text-left ltr:sm:text-left rtl:sm:text-right">
 
-                <h1 class="font-black text-white text-8xl">
+                <h1 class="text-4xl font-black text-white sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
                     Monitor
 
                     <strong class="block font-black">Water Resources. </strong>
