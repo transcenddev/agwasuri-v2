@@ -42,7 +42,7 @@ class WaterQualityChart extends Component
             ->multiLine()
         );
 
-        return view('livewire.water-quality-chart')->with([
+        return \view('livewire.water-quality-chart')->with([
             'lineChartModel' => $lineChartModel,
         ]);
     }

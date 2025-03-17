@@ -34,6 +34,6 @@ class WaterQualityCard extends Component
 
     public function render()
     {
-        return view('livewire.water-quality-card');
+        return \view('livewire.water-quality-card');
     }
 }

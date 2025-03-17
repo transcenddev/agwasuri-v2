@@ -30,6 +30,6 @@ class WaterQualityDataTable extends Component
     public function render()
     {
         $water_quality_data = WaterQualityData::latest()->paginate(perPage: $this->paginate_num);
-        return view('livewire.water-quality-data-table', compact('water_quality_data'));
+        return \view('livewire.water-quality-data-table', compact('water_quality_data'));
     }
 }
