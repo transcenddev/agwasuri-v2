@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,6 +21,7 @@ class DatabaseSeeder extends Seeder
             'account_type' => 'admin',
             'email' => 'admin@admin.com',
             'password' => bcrypt('admin1234'),
+            'api_key' => Str::random(32),
         ]);
 
         User::factory()->create([
@@ -27,6 +29,9 @@ class DatabaseSeeder extends Seeder
             'account_type' => 'user',
             'email' => 'test@test.com',
             'password' => bcrypt('test1234'),
+            'api_key' => Str::random(32),
         ]);
+
+        $this->call(WaterQualityDataSeeder::class);
     }
 }

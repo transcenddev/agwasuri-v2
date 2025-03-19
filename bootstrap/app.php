@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'isAdmin' => IsAdmin::class
         ]);
+        $middleware->validateCsrfTokens(
+            except: ['store-water-quality-data']
+        );
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

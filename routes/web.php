@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\WaterQualityDataController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
@@ -15,5 +16,15 @@ Route::view('account_management', 'account_management')
 Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
+
+Route::view('optimal-fish', 'optimal-fish')
+    ->middleware(['auth'])
+    ->name('optimal-fish');
+
+Route::view('historical-data', 'historical-data')
+    ->middleware(['auth'])
+    ->name('historical-data');
+
+Route::post('store-water-quality-data', [WaterQualityDataController::class, 'store']);
 
 require __DIR__.'/auth.php';

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\WaterQualityData;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -22,7 +23,7 @@ class WaterQualityCard extends Component
     #[On('echo:water-quality-data-created,WaterQualityCreated')]
     public function mount()
     {
-        $waterQualityData = WaterQualityData::latest()->first();
+        $waterQualityData = WaterQualityData::where('user_id', Auth::id())->latest()->first();
 
         if ($waterQualityData) {
             $this->temperature = $waterQualityData->temperature;

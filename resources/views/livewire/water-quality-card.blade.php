@@ -3,25 +3,25 @@
         <div class="flex flex-col px-4 py-8 text-center rounded-lg bg-blue-50">
             <dt class="order-last text-lg font-medium text-gray-500">Temperature</dt>
 
-            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->temperature ?? '00.00' }}</dd>
+            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->temperature ?? '-' }}</dd>
         </div>
 
         <div class="flex flex-col px-4 py-8 text-center rounded-lg bg-blue-50">
             <dt class="order-last text-lg font-medium text-gray-500">Salinity</dt>
 
-            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->salinity ?? '00.00' }}</dd>
+            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->salinity ?? '-' }}</dd>
         </div>
 
         <div class="flex flex-col px-4 py-8 text-center rounded-lg bg-blue-50">
             <dt class="order-last text-lg font-medium text-gray-500">Dissolved Oxygen</dt>
 
-            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->dissolved_oxygen ?? '0.00' }}</dd>
+            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->dissolved_oxygen ?? '-' }}</dd>
         </div>
 
         <div class="flex flex-col px-4 py-8 text-center rounded-lg bg-blue-50">
             <dt class="order-last text-lg font-medium text-gray-500">pH</dt>
 
-            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->ph_level ?? '0.00'}}</dd>
+            <dd class="text-4xl font-extrabold text-blue-600 md:text-5xl">{{ $this->ph_level ?? '-'}}</dd>
         </div>
     </dl>
 </div>

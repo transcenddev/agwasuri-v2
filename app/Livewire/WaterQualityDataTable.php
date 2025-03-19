@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\WaterQualityData;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
@@ -29,7 +30,10 @@ class WaterQualityDataTable extends Component
 
     public function render()
     {
-        $water_quality_data = WaterQualityData::latest()->paginate(perPage: $this->paginate_num);
+        $water_quality_data = WaterQualityData::where('user_id', Auth::id())
+            ->latest()
+            ->paginate(perPage: $this->paginate_num);
+
         return \view('livewire.water-quality-data-table', compact('water_quality_data'));
     }
 }

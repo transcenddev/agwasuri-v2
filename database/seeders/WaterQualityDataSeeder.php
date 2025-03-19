@@ -33,6 +33,7 @@ class WaterQualityDataSeeder extends Seeder
                 'ph_level'         => round($simulatedPhLevel, 2),
                 'dissolved_oxygen' => round($simulatedDO, 2),
                 'salinity'         => round($simulatedSalinity, 2),
+                'user_id'          => 2,
             ]);
         }
     }
