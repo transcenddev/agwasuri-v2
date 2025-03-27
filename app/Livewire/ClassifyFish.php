@@ -35,7 +35,7 @@ class ClassifyFish extends Component
             ];
 
             // Make API request to FastAPI endpoint
-            $response = Http::post('http://localhost:8090/predict', [
+            $response = Http::post('https://api.lokodata.site/predict', [
                 'optimal_temperature_C' => (float) $averageData['temperature'],
                 'optimal_dissolved_oxygen_mgL' => (float) $averageData['dissolved_oxygen'],
                 'optimal_salinity_ppt' => (float) $averageData['salinity'],
