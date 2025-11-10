@@ -28,10 +28,11 @@ class ClassifyFish extends Component
     public ?string $lastTrainedTimestamp = null;
     public bool $isTraining = false;
 
-    const API_BASE_URL = 'https://api.agwasuri.app/predict'; // Using localhost for now
+    // FIX: base is root only
+    const API_BASE_URL = 'https://api.agwasuri.app';
     const PREDICT_ENDPOINT = self::API_BASE_URL . '/predict';
-    const TRAIN_ENDPOINT = self::API_BASE_URL . '/train_model';
-    const MODEL_IDENTIFIER = 'fish_classifier'; // Define a constant for the model name
+    const TRAIN_ENDPOINT   = self::API_BASE_URL . '/train_model';
+    const MODEL_IDENTIFIER = 'fish_classifier';
 
     #[On('user-selected')]
     public function updateUser($userId)
@@ -46,19 +47,21 @@ class ClassifyFish extends Component
     public function updateDates($startDate, $endDate)
     {
         Log::info('ClassifyFish: Date range updated.', ['start' => $startDate, 'end' => $endDate]);
-        $this->startDate = $startDate;
-        $this->endDate = $endDate;
+        $this->startDate = $startDate ?: null;
+        $this->endDate = $endDate ?: null;
         $this->resetState();
         $this->checkCanPredict();
     }
 
-    private function resetState()
+    private function resetState(bool $clearError = true)
     {
         $this->predictionResults = [];
         $this->modelMetrics = [];
         $this->explanations = [];
         $this->waterQualityData = null;
-        $this->error = null;
+        if ($clearError) {
+            $this->error = null;
+        }
     }
 
     private function checkCanPredict()
@@ -79,7 +82,7 @@ class ClassifyFish extends Component
         }
 
         $this->userId = $loggedInUser->getKey();
-        $this->isAdminView = $loggedInUser->isAdmin();
+        $this->isAdminView = method_exists($loggedInUser, 'isAdmin') ? $loggedInUser->isAdmin() : false;
 
         if ($this->isAdminView) {
             $this->userId = null;
@@ -128,7 +131,8 @@ class ClassifyFish extends Component
         session()->forget(['train_message', 'train_error']);
 
         try {
-            $response = Http::post(self::TRAIN_ENDPOINT);
+            // FIX: send JSON + timeout
+            $response = Http::timeout(30)->asJson()->post(self::TRAIN_ENDPOINT);
 
             if ($response->successful()) {
                 $responseData = $response->json();
@@ -136,7 +140,7 @@ class ClassifyFish extends Component
                 session()->flash('train_message', $message);
                 Log::info('ClassifyFish: Model training request successful.', ['response' => $responseData]);
 
-                if (isset($responseData['timestamp'])) {
+                if (!empty($responseData['timestamp'])) {
                     $timestampString = $responseData['timestamp'];
                     try {
                         $parsedTimestamp = Carbon::parse($timestampString);
@@ -158,12 +162,12 @@ class ClassifyFish extends Component
                         $this->fetchLastTrainedTimestampFromDb();
                     }
                 } else {
-                    Log::warning('ClassifyFish: Timestamp missing in successful train response. Cannot update DB record.', ['response' => $responseData]);
+                    Log::warning('ClassifyFish: Timestamp missing in successful train response.', ['response' => $responseData]);
                     session()->flash('train_error', 'Training successful, but timestamp was missing in response.');
                 }
 
             } else {
-                $errorDetail = $response->json('detail') ?? 'Unknown error occurred during training.';
+                $errorDetail = data_get($response->json(), 'detail', 'Unknown error occurred during training.');
                 $errorMessage = 'Failed to train model (Status: ' . $response->status() . ') - ' . $errorDetail;
                 session()->flash('train_error', $errorMessage);
                 Log::error('ClassifyFish: Model training request failed.', ['status' => $response->status(), 'body' => $response->body()]);
@@ -186,41 +190,57 @@ class ClassifyFish extends Component
         }
 
         Log::info('ClassifyFish: Starting prediction.', ['userId' => $this->userId, 'startDate' => $this->startDate, 'endDate' => $this->endDate]);
-        $this->resetState();
+
+        // Clear prior results but keep error until success
+        $this->resetState(clearError: false);
 
         try {
-            $query = WaterQualityData::where('user_id', $this->userId);
+            // Basic date guard
+            $start = $this->startDate ? Carbon::parse($this->startDate)->startOfDay() : null;
+            $end   = $this->endDate ? Carbon::parse($this->endDate)->endOfDay() : null;
 
-            if ($this->startDate && $this->endDate) {
-                $query->whereBetween('recorded_at', [$this->startDate . ' 00:00:00', $this->endDate . ' 23:59:59']);
-            } elseif ($this->startDate) {
-                $query->where('recorded_at', '>=', $this->startDate . ' 00:00:00');
-            } elseif ($this->endDate) {
-                $query->where('recorded_at', '<=', $this->endDate . ' 23:59:59');
+            $query = WaterQualityData::where('user_id', $this->userId)
+                ->whereNotNull('temperature')
+                ->whereNotNull('salinity')
+                ->whereNotNull('dissolved_oxygen')
+                ->whereNotNull('ph_level');
+
+            if ($start && $end) {
+                $query->whereBetween('recorded_at', [$start, $end]);
+            } elseif ($start) {
+                $query->where('recorded_at', '>=', $start);
+            } elseif ($end) {
+                $query->where('recorded_at', '<=', $end);
             }
 
             $averageData = $query->selectRaw(
                 'AVG(temperature) as temperature,
-                AVG(salinity) as salinity,
-                AVG(dissolved_oxygen) as dissolved_oxygen,
-                AVG(ph_level) as ph_level'
+                 AVG(salinity) as salinity,
+                 AVG(dissolved_oxygen) as dissolved_oxygen,
+                 AVG(ph_level) as ph_level'
             )->first();
 
-            if (is_null($averageData) || is_null($averageData->temperature)) {
-                $this->error = 'No water quality data found for the selected user' . ($this->startDate || $this->endDate ? ' in the specified date range.' : '.');
+            if (
+                is_null($averageData) ||
+                is_null($averageData->temperature) ||
+                is_null($averageData->dissolved_oxygen) ||
+                is_null($averageData->salinity) ||
+                is_null($averageData->ph_level)
+            ) {
+                $this->error = 'No complete water quality data found for the selected user' . ($this->startDate || $this->endDate ? ' in the specified date range.' : '.');
                 Log::warning('ClassifyFish: No data found for averaging.', ['userId' => $this->userId, 'startDate' => $this->startDate, 'endDate' => $this->endDate]);
                 return;
             }
 
-            $averageDataArray = $averageData->toArray();
             $this->waterQualityData = [
-                'temperature' => round($averageDataArray['temperature'], 2),
-                'dissolved_oxygen' => round($averageDataArray['dissolved_oxygen'], 2),
-                'salinity' => round($averageDataArray['salinity'], 2),
-                'ph_level' => round($averageDataArray['ph_level'], 2),
+                'temperature' => round((float)$averageData->temperature, 2),
+                'dissolved_oxygen' => round((float)$averageData->dissolved_oxygen, 2),
+                'salinity' => round((float)$averageData->salinity, 2),
+                'ph_level' => round((float)$averageData->ph_level, 2),
             ];
 
-            $response = Http::post(self::PREDICT_ENDPOINT, [
+            // FIX: send JSON + timeout
+            $response = Http::timeout(20)->asJson()->post(self::PREDICT_ENDPOINT, [
                 'optimal_temperature_C' => (float) $this->waterQualityData['temperature'],
                 'optimal_dissolved_oxygen_mgL' => (float) $this->waterQualityData['dissolved_oxygen'],
                 'optimal_salinity_ppt' => (float) $this->waterQualityData['salinity'],
@@ -229,25 +249,26 @@ class ClassifyFish extends Component
 
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('ClassifyFish: API Prediction Response:', $data);
-                $this->predictionResults = $data['predictions'];
+
+                // Guard keys
+                $this->predictionResults = (array) data_get($data, 'predictions', []);
                 $this->modelMetrics = [
-                    'accuracy' => $data['model_accuracy_percentage'],
-                    'precision' => $data['precision_percentage'],
-                    'recall' => $data['recall_percentage'],
-                    'f1_score' => $data['f1_score_percentage']
+                    'accuracy' => (float) data_get($data, 'model_accuracy_percentage', 0),
+                    'precision' => (float) data_get($data, 'precision_percentage', 0),
+                    'recall' => (float) data_get($data, 'recall_percentage', 0),
+                    'f1_score' => (float) data_get($data, 'f1_score_percentage', 0),
                 ];
+
                 $this->generateExplanations();
-                $this->error = null;
+                $this->error = null; // success clears error
             } else {
                 Log::error('ClassifyFish: Prediction API request failed.', ['status' => $response->status(), 'body' => $response->body()]);
                 $this->error = 'Failed to get prediction from API (Status: ' . $response->status() . ')';
-                $this->resetState();
+                // keep prior diagnostics
             }
         } catch (\Exception $e) {
-            Log::error('ClassifyFish: Exception during prediction.', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Log::error('ClassifyFish: Exception during prediction.', ['message' => $e->getMessage()]);
             $this->error = 'An unexpected error occurred during prediction: ' . $e->getMessage();
-            $this->resetState();
         }
     }
 
@@ -276,13 +297,13 @@ class ClassifyFish extends Component
 
         if (!empty($this->predictionResults)) {
             $topPrediction = $this->predictionResults[0];
-            $this->explanations['top_prediction'] = "The model predicts that
-                {$topPrediction['species_name']} is the most suitable species with
-                {$topPrediction['confidence_percentage']}% confidence.";
+            $name = data_get($topPrediction, 'species_name', 'N/A');
+            $conf = (float) data_get($topPrediction, 'confidence_percentage', 0);
+            $this->explanations['top_prediction'] = "The model predicts that {$name} is the most suitable species with {$conf}% confidence.";
 
-            if ($topPrediction['confidence_percentage'] >= 90) {
+            if ($conf >= 90) {
                 $this->explanations['confidence_context'] = "This is a very high confidence prediction.";
-            } elseif ($topPrediction['confidence_percentage'] >= 70) {
+            } elseif ($conf >= 70) {
                 $this->explanations['confidence_context'] = "This is a moderately high confidence prediction.";
             } else {
                 $this->explanations['confidence_context'] = "This prediction has lower confidence. Consider monitoring water quality parameters closely.";
