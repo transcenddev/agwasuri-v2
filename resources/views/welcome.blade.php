@@ -17,7 +17,7 @@
 
 <body
     class="relative font-sans antialiased bg-fixed bg-center bg-no-repeat bg-cover"
-    style="background-image: url('{{ asset('assets/welcome_bg.png') }}');">
+    style="background-image: url('{{ asset('assets/welcome_bg.webp') }}');">
 
         <livewire:welcome.navigation />
 

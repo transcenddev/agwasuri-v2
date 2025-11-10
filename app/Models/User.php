@@ -12,10 +12,20 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
     protected $primaryKey = 'user_id';
     protected $fillable = [
-        'name',
+        // 'name', // Removed
+        'first_name', // Added
+        'last_name', // Added
         'email',
         'password',
         'account_type',
+        'fishpond_name', // Added
+        'barangay',
+        'municipality',
+        'province',
+        'total_fishpond_area',
+        'species_cultured',
+        'water_type',
+        'api_key',
     ];
 
     protected $hidden = [
@@ -28,6 +38,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'species_cultured' => 'array',
         ];
     }
 

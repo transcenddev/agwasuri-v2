@@ -14,10 +14,18 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id('user_id');
             $table->string('account_type')->default('user');
-            $table->string('name');
+            $table->string('first_name');
+            $table->string('last_name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('fishpond_name')->nullable();
+            $table->string('barangay')->nullable();
+            $table->string('municipality')->nullable();
+            $table->string('province')->nullable();
+            $table->decimal('total_fishpond_area', 8, 2)->nullable();
+            $table->string('species_cultured')->nullable();
+            $table->string('water_type')->nullable();
             $table->string('api_key')->unique()->nullable();
             $table->rememberToken();
             $table->timestamps();
