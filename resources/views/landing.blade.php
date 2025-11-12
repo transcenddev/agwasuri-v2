@@ -1,3 +1,13 @@
+{{--
+    UNCONVENTIONAL MODE - Creative/Experimental Design
+    
+    This is the experimental landing page for testing modern UI/UX ideas.
+    Features: glassmorphism, gradients, micro-animations, creative layouts.
+    Still professional and accessible - creative but not messy.
+    
+    For stable production design, see welcome.blade.php
+    Preview Route: http://127.0.0.1:8000/preview
+--}}
 <!DOCTYPE html>
 <html lang="en" class="{{ session('darkMode', false) ? 'dark' : '' }}">
 <head>

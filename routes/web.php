@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 
+// Preview/experimental routes for testing new designs
+Route::view('/preview', 'landing')->name('preview');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

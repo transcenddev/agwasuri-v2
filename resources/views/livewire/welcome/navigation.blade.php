@@ -1,11 +1,16 @@
 <nav class="flex items-center justify-between flex-1 max-w-screen-xl px-4 mx-auto sm:px-6 lg:px-8 py-14">
     <div>
-        <a href="{{ url('/') }}">
-            <x-application-logo class="h-9 w-28" />
+        <a href="{{ url('/') }}" class="flex items-center">
+            <span class="text-2xl font-bold text-white drop-shadow-lg">
+                <span class="text-cvsu">Agwa</span><span class="text-white">Suri</span>
+            </span>
         </a>
     </div>
 
-    <div>
+    <div class="flex items-center gap-4">
+        <!-- Dark Mode Toggle -->
+        <livewire:dark-mode-toggle />
+
         @auth
         <a href="{{ url('/dashboard') }}"
             class="rounded-md text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white">

@@ -9,10 +9,13 @@ export default {
         "./resources/views/**/*.blade.php",
     ],
 
+    darkMode: "class", // Enable dark mode with class strategy
+
     theme: {
         extend: {
             fontFamily: {
                 sans: ["Figtree", ...defaultTheme.fontFamily.sans],
+                serif: ["Wulkan Display", ...defaultTheme.fontFamily.serif],
             },
             colors: {
                 water: {
@@ -66,6 +69,19 @@ export default {
                     800: "#1e293b",
                     900: "#0f172a",
                     950: "#020617",
+                },
+                cvsu: {
+                    DEFAULT: "#1B651B",
+                    50: "#E8F5E8",
+                    100: "#D1EBD1",
+                    200: "#A3D7A3",
+                    300: "#75C375",
+                    400: "#47AF47",
+                    500: "#1B651B",
+                    600: "#165116",
+                    700: "#103D10",
+                    800: "#0B290B",
+                    900: "#051505",
                 },
             },
         },
