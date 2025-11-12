@@ -36,6 +36,46 @@ AgwaSuri is a water quality monitoring system for fishponds, combining IoT senso
 
 **Note**: For complete thesis documentation including research objectives, system testing details, and scope/limitations, see `docs/THESIS_CONTEXT.md`.
 
+## UI/UX Design Philosophy
+
+### Two-Mode Approach
+
+The project supports two distinct design modes to balance professionalism with creative experimentation:
+
+**1. Regular Mode** (`welcome.blade.php` - Production/Conservative)
+
+-   Clean, professional design suitable for clients and stakeholders
+-   Familiar UI patterns that "masa" (general audience) easily understands
+-   Focus on clarity, readability, and trust-building
+-   Conservative color usage and straightforward layouts
+-   Ideal for: thesis presentations, client demos, official deployments
+
+**2. Unconventional Mode** (`landing.blade.php` - Creative/Experimental)
+
+-   Creative UI/UX improvements with modern design trends
+-   Innovative interactions while maintaining usability
+-   Experimental features like glassmorphism, gradients, micro-animations
+-   Still accessible to general audience - creative but not messy
+-   Ideal for: showcasing modern capabilities, A/B testing, portfolio pieces
+
+**Safe Testing Workflow**:
+
+```bash
+# Main site (production-ready)
+http://127.0.0.1:8000/          → welcome.blade.php (Regular Mode)
+
+# Preview experimental designs
+http://127.0.0.1:8000/preview   → landing.blade.php (Unconventional Mode)
+```
+
+**Design Guidelines**:
+
+-   Both modes must maintain accessibility (WCAG 2.1 AA)
+-   Both modes use the same custom color system (water, pond, aqua, ocean)
+-   Unconventional mode can push boundaries but must stay professional
+-   Test creative ideas in preview routes before making them live
+-   Consider "masa" usability: avoid overly complex interactions
+
 ## Architecture Patterns
 
 ### Livewire Component Structure
@@ -79,6 +119,36 @@ Sensor data ingestion at `POST /store-water-quality-data`:
 Use **aquaculture-themed colors** (not default Tailwind):
 
 -   `water-{50-950}` - primary blues (#0ea5e9 at 500)
+-   `pond-{50-950}` - teals (#06b6d4 at 500)
+-   `aqua-{50-950}` - green-blues (#14b8a6 at 500)
+-   `ocean-{50-950}` - grays (#64748b at 500)
+
+Defined in `tailwind.config.js`. See `docs/COLOR_SYSTEM.md` for usage guidelines.
+
+### Dark Mode System
+
+**Implementation**: Class-based dark mode with Livewire toggle component
+
+-   **Toggle Component**: `DarkModeToggle` Livewire component in navigation
+-   **Session Storage**: Dark mode preference stored in Laravel session
+-   **Tailwind Config**: `darkMode: 'class'` strategy enabled
+-   **Usage**: Add `dark:` prefix to Tailwind classes (e.g., `dark:bg-gray-900`)
+
+**Adding dark mode styles**:
+
+```blade
+<!-- Background changes in dark mode -->
+<div class="bg-white dark:bg-gray-900">
+
+<!-- Text color changes -->
+<p class="text-gray-900 dark:text-white">
+
+<!-- Custom colors work too -->
+<button class="bg-water-600 hover:bg-water-700 dark:bg-water-500 dark:hover:bg-water-600">
+```
+
+**Component**: `<livewire:dark-mode-toggle />` - Add to any navigation/header
+
 -   `pond-{50-950}` - teals (#06b6d4 at 500)
 -   `aqua-{50-950}` - green-blues (#14b8a6 at 500)
 -   `ocean-{50-950}` - grays (#64748b at 500)
@@ -178,6 +248,37 @@ Key docs in `docs/`:
 -   `LANDING_PAGE_BUILD_SUMMARY.md` - Landing page features
 
 Reference these when working on UI/UX or understanding design decisions.
+
+## Experimenting with UI/UX
+
+### Creating Design Variants
+
+When exploring unconventional UI ideas:
+
+1. **Work on preview routes** - Never directly modify production pages
+2. **Create variants** - Copy `landing.blade.php` to `landing-v2.blade.php` for new experiments
+3. **Add preview routes**:
+    ```php
+    Route::view('/preview-v2', 'landing-v2')->name('preview-v2');
+    ```
+4. **Test with real users** - Show both modes to fishpond operators for feedback
+5. **Keep it accessible** - Creative doesn't mean complex; "masa" should understand it
+
+### When to Use Each Mode
+
+**Use Regular Mode when:**
+
+-   Presenting to thesis committee
+-   Demonstrating to Municipal Agriculture Office
+-   Deploying to actual fishpond operators (initial rollout)
+-   Prioritizing stability and familiarity
+
+**Use Unconventional Mode when:**
+
+-   Showcasing innovation and modern tech capabilities
+-   A/B testing engagement improvements
+-   Portfolio/competition submissions
+-   After user testing validates the creative approach
 
 ## Common Pitfalls
 
